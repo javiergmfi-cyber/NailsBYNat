@@ -40,9 +40,7 @@ function LoginForm() {
         return;
       }
 
-      setError("Login success! Redirecting...");
-      router.push(redirectTo);
-      router.refresh();
+      window.location.href = redirectTo;
       return;
     } catch (err) {
       setError(`Error: ${(err as Error).message}`);
