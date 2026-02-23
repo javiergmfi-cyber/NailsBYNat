@@ -24,30 +24,31 @@ function LoginForm() {
 
     try {
       const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
 
-      if (authError) {
+      const result = await Promise.race([
+        supabase.auth.signInWithPassword({ email, password }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout after 10s")), 10000)),
+      ]) as Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>;
+
+      if (result.error) {
         setError(
-          authError.message === "Invalid login credentials"
+          result.error.message === "Invalid login credentials"
             ? "Incorrect email or password. Try again?"
-            : authError.message
+            : result.error.message
         );
         setLoading(false);
         return;
       }
+
+      setError("Login success! Redirecting...");
+      router.push(redirectTo);
+      router.refresh();
+      return;
     } catch (err) {
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "UNDEFINED";
-      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "UNDEFINED";
-      setError(`${(err as Error).message} | URL: "${url.slice(0, 30)}" | Key len: ${key.length}`);
+      setError(`Error: ${(err as Error).message}`);
       setLoading(false);
       return;
     }
-
-    router.push(redirectTo);
-    router.refresh();
   }
 
   return (
