@@ -22,6 +22,14 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) {
+      setError(`Missing env vars — URL: ${url ? "set" : "MISSING"}, Key: ${key ? "set" : "MISSING"}`);
+      setLoading(false);
+      return;
+    }
+
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signInWithPassword({
       email,
