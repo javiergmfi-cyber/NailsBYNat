@@ -22,32 +22,26 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+    try {
+      const supabase = createClient();
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (!url || !key) {
-      setError(`Missing env vars — URL: ${url ? "set" : "MISSING"}, Key: ${key ? "set" : "MISSING"}`);
-      setLoading(false);
-      return;
-    }
-
-    // Debug: show what we have
-    setError(`DEBUG — URL: "${url}" | Key starts: "${key.slice(0, 20)}..." | Key length: ${key.length}`);
-    setLoading(false);
-    return;
-
-    const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (authError) {
-      setError(
-        authError.message === "Invalid login credentials"
-          ? "Incorrect email or password. Try again?"
-          : authError.message
-      );
+      if (authError) {
+        setError(
+          authError.message === "Invalid login credentials"
+            ? "Incorrect email or password. Try again?"
+            : authError.message
+        );
+        setLoading(false);
+        return;
+      }
+    } catch (err) {
+      const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "UNDEFINED";
+      const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "UNDEFINED";
+      setError(`${(err as Error).message} | URL: "${url.slice(0, 30)}" | Key len: ${key.length}`);
       setLoading(false);
       return;
     }
