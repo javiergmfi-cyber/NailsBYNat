@@ -22,13 +22,19 @@ function LoginForm() {
     setError("");
     setLoading(true);
 
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+
     if (!url || !key) {
       setError(`Missing env vars — URL: ${url ? "set" : "MISSING"}, Key: ${key ? "set" : "MISSING"}`);
       setLoading(false);
       return;
     }
+
+    // Debug: show what we have
+    setError(`DEBUG — URL: "${url}" | Key starts: "${key.slice(0, 20)}..." | Key length: ${key.length}`);
+    setLoading(false);
+    return;
 
     const supabase = createClient();
     const { error: authError } = await supabase.auth.signInWithPassword({
